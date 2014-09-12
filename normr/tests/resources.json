@@ -1,0 +1,6 @@
+[
+    "http://code.jquery.com/qunit/qunit-1.15.0.js",
+    {"css": "http://code.jquery.com/qunit/qunit-1.15.0.css"},
+    "tests.js",
+    "main.html"
+]
