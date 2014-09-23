@@ -6,4 +6,10 @@ test "complex input", (assert) ->
 
     assert.ok ($blab.normr(A)-correct).norm2() < nm.epsilon
 
+test "real input", (assert) -> 
+
+    A = [[0, 2], [3, 4]]
+    correct = [[0, 1], [0.6, 0.8]]
+    y = complex($blab.normr(A)-correct, A*0) # fudge for norm2
+    assert.ok y.norm2() < nm.epsilon
 
