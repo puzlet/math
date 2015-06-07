@@ -92,7 +92,8 @@ class MathCoffee
     new NumericFunctions
     new BlabPrinter
     new BlabPlotter
-    new EvalBoxPlotter
+    @evalBoxPlotter = new EvalBoxPlotter
+    @extraLines = (resultArray) => @evalBoxPlotter.extraLines(resultArray)
     @mathInitialized = true
     
   compile: (code, bare) ->
@@ -131,19 +132,6 @@ class MathCoffee
   postProcess: (js) ->
     js = PaperScript.compile js
     js
-  
-  # TODO: use this
-  plotLines: (resultArray) ->
-      n = null
-      numLines = resultArray.length
-      for b, idx in resultArray
-          n = idx if (typeof b is "string") and b.indexOf("eval_plot") isnt -1
-      d = if n then (n - numLines + 8) else 0
-      l = if d and d>0 then d else 0
-      return "" unless l>0
-      lfs = ""
-      lfs += @lf for i in [1..l]
-      lfs
 
 
 class TypeMath
@@ -436,6 +424,19 @@ class EvalBoxPlotter
     
   plotSeries: (series, params={}) ->
     @doPlot params, (fig) -> fig.plotSeries(series)  # no support yet for params here
+    
+  extraLines: (resultArray) ->
+      return "" unless resultArray
+      n = null
+      numLines = resultArray.length
+      for b, idx in resultArray
+          n = idx if (typeof b is "string") and b.indexOf("eval_plot") isnt -1
+      d = if n then (n - numLines + 8) else 0
+      l = if d and d>0 then d else 0
+      return "" unless l>0
+      lfs = ""
+      lfs += "\n" for i in [1..l]
+      lfs
 
 
 class Figure
@@ -530,51 +531,3 @@ class AxesLabels
 
 # Export
 window.$mathCoffee = new MathCoffee
-
-### Not used - to obsolete
-
-complexMatrices: ->
-  
-  Array.prototype.complexParts = ->
-    A = this
-    [m, n] = size A
-    vParts = (v) -> [(a.x for a in v), (a.y for a in v)]
-    if not n
-      # Vector
-      [real, imag] = vParts A
-    else
-      # Matrix
-      real = new Array m
-      imag = new Array m
-      [real[m], imag[m]] = vParts(row) for row, m in A
-    [real, imag]
-  
-  # These could be made more efficient.
-  Array.prototype.real = -> this.complexParts()[0]
-  Array.prototype.imag = -> this.complexParts()[1]
-  
-  #Array.prototype.isComplex = ->
-  # A = this
-  # [m, n] = size A
-
-manualOverloadExamples: ->
-  # Not currently used - using numericjs instead.
-  
-  Number.prototype.__add = (y) ->
-    # ZZZ is this inefficient for scaler x+y?
-    if typeof y is "number"
-      return this + y
-    else if y instanceof Array
-      return (this + yn for yn in y)
-    else
-      undefined
-
-  Array.prototype.__add = (y) ->
-    if typeof y is "number"
-      return (x + y for x in this)
-    else if y instanceof Array
-      return (x + y[n] for x, n in this)
-    else
-      undefined
-  
-###

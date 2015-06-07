@@ -6568,7 +6568,12 @@ Attaches math methods to Number and Array.
       new NumericFunctions;
       new BlabPrinter;
       new BlabPlotter;
-      new EvalBoxPlotter;
+      this.evalBoxPlotter = new EvalBoxPlotter;
+      this.extraLines = (function(_this) {
+        return function(resultArray) {
+          return _this.evalBoxPlotter.extraLines(resultArray);
+        };
+      })(this);
       return this.mathInitialized = true;
     };
 
@@ -6622,28 +6627,6 @@ Attaches math methods to Number and Array.
     MathCoffee.prototype.postProcess = function(js) {
       js = PaperScript.compile(js);
       return js;
-    };
-
-    MathCoffee.prototype.plotLines = function(resultArray) {
-      var b, d, i, idx, k, l, len, lfs, n, numLines, o, ref;
-      n = null;
-      numLines = resultArray.length;
-      for (idx = k = 0, len = resultArray.length; k < len; idx = ++k) {
-        b = resultArray[idx];
-        if ((typeof b === "string") && b.indexOf("eval_plot") !== -1) {
-          n = idx;
-        }
-      }
-      d = n ? n - numLines + 8 : 0;
-      l = d && d > 0 ? d : 0;
-      if (!(l > 0)) {
-        return "";
-      }
-      lfs = "";
-      for (i = o = 1, ref = l; 1 <= ref ? o <= ref : o >= ref; i = 1 <= ref ? ++o : --o) {
-        lfs += this.lf;
-      }
-      return lfs;
     };
 
     return MathCoffee;
@@ -7068,6 +7051,31 @@ Attaches math methods to Number and Array.
       });
     };
 
+    EvalBoxPlotter.prototype.extraLines = function(resultArray) {
+      var b, d, i, idx, k, l, len, lfs, n, numLines, o, ref;
+      if (!resultArray) {
+        return "";
+      }
+      n = null;
+      numLines = resultArray.length;
+      for (idx = k = 0, len = resultArray.length; k < len; idx = ++k) {
+        b = resultArray[idx];
+        if ((typeof b === "string") && b.indexOf("eval_plot") !== -1) {
+          n = idx;
+        }
+      }
+      d = n ? n - numLines + 8 : 0;
+      l = d && d > 0 ? d : 0;
+      if (!(l > 0)) {
+        return "";
+      }
+      lfs = "";
+      for (i = o = 1, ref = l; 1 <= ref ? o <= ref : o >= ref; i = 1 <= ref ? ++o : --o) {
+        lfs += "\n";
+      }
+      return lfs;
+    };
+
     return EvalBoxPlotter;
 
   })();
@@ -7211,53 +7219,5 @@ Attaches math methods to Number and Array.
   })();
 
   window.$mathCoffee = new MathCoffee;
-
-
-  /* Not used - to obsolete
-  
-  complexMatrices: ->
-    
-    Array.prototype.complexParts = ->
-      A = this
-      [m, n] = size A
-      vParts = (v) -> [(a.x for a in v), (a.y for a in v)]
-      if not n
-         * Vector
-        [real, imag] = vParts A
-      else
-         * Matrix
-        real = new Array m
-        imag = new Array m
-        [real[m], imag[m]] = vParts(row) for row, m in A
-      [real, imag]
-    
-     * These could be made more efficient.
-    Array.prototype.real = -> this.complexParts()[0]
-    Array.prototype.imag = -> this.complexParts()[1]
-    
-    #Array.prototype.isComplex = ->
-     * A = this
-     * [m, n] = size A
-  
-  manualOverloadExamples: ->
-     * Not currently used - using numericjs instead.
-    
-    Number.prototype.__add = (y) ->
-       * ZZZ is this inefficient for scaler x+y?
-      if typeof y is "number"
-        return this + y
-      else if y instanceof Array
-        return (this + yn for yn in y)
-      else
-        undefined
-  
-    Array.prototype.__add = (y) ->
-      if typeof y is "number"
-        return (x + y for x in this)
-      else if y instanceof Array
-        return (x + y[n] for x, n in this)
-      else
-        undefined
-   */
 
 }).call(this);
