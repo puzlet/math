@@ -1,3 +1,7 @@
+# Dependencies:
+# MathPlotting depends on $mathCoffee (math.coffee)
+# EvalBoxPlotter.figure and EvalBoxPlotter.clear depend on $Ace.
+
 class MathPlotting
   
   preDefinedCoffee: """
@@ -64,6 +68,9 @@ class BlabPlotter
 
 class EvalBoxPlotter
   
+  figClass = "eval_flot"
+  plotPrefix = "eval_plot_"
+  
   constructor: ->
     @clear()
     numeric.plot = (x, y, params={}) => @plot(x, y, params)
@@ -72,20 +79,23 @@ class EvalBoxPlotter
     numeric.plotSeries = (series, params={}) => @plotSeries(series, params)
     @figures = []
     @plotCount = 0
+    
+  clear: -> $Ace?.evalRemove ".#{figClass}"
   
-  clear: ->
-    resource = $blab.evaluatingResource
-    resource?.containers?.getEvalContainer()?.find(".eval_flot").remove()
-    
   figure: (params={}) ->
-    resource = $blab.evaluatingResource
-    return unless resource
-    flotId = "eval_plot_#{resource.url}_#{@plotCount}"
-    
-    @figures[flotId] = new Figure resource, flotId, params
+    {container, resource, find} = $Ace?.evalContainer()
+    return unless container
+    flotId = "#{plotPrefix}#{resource.url}_#{@plotCount}"
+    figure = new Figure
+      container: container
+      flotId: flotId
+      containerLine: (-> find flotId)
+      figClass: figClass
+      params: params  # ZZZ pass flot class 
+    @figures[flotId] = figure
     @plotCount++
     flotId  # ZZZ need to replace this line in coffee eval box
-  
+    
   doPlot: (params, plotFcn) ->
     flotId = params.fig ? @figure params
     return null unless flotId
@@ -105,7 +115,7 @@ class EvalBoxPlotter
       n = null
       numLines = resultArray.length
       for b, idx in resultArray
-          n = idx if (typeof b is "string") and b.indexOf("eval_plot") isnt -1
+          n = idx if (typeof b is "string") and b.indexOf(plotPrefix) isnt -1
       d = if n then (n - numLines + 8) else 0
       l = if d and d>0 then d else 0
       return "" unless l>0
@@ -116,17 +126,16 @@ class EvalBoxPlotter
 
 class Figure
   
-  constructor: (@resource, @flotId, @params) ->
+  constructor: (@spec) ->
     
-    @container = @resource.containers?.getEvalContainer()
-    return unless @container?.length
+    {@container, @flotId, @containerLine, @figClass, @params} = @spec
     
     # Plot container (eval box)
     @w = @container[0].offsetWidth
     
     @flot = $ "<div>",
       id: @flotId
-      class: "eval_flot"
+      class: @figClass
       css:
         position: "absolute"
         top: "0px"
@@ -144,7 +153,7 @@ class Figure
     setTimeout (=> @setPos()), 10 # ZZZ better way them timeout?  e.g., after blab eval?
     
   setPos: ->
-    p = @resource.compiler.findStr @flotId  # ZZZ finds *last* one
+    p = @containerLine() # ZZZ finds *last* one
     return unless p
     @flot.css top: "#{p*22}px"
     @flot.show()  # Delay showing div until set position
@@ -179,7 +188,6 @@ class Figure
     @axesLabels = new AxesLabels @flot, @params
     @axesLabels.position() if @positioned
     
-
 
 class AxesLabels
   

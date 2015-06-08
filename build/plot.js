@@ -82,6 +82,12 @@
   })();
 
   EvalBoxPlotter = (function() {
+    var figClass, plotPrefix;
+
+    figClass = "eval_flot";
+
+    plotPrefix = "eval_plot_";
+
     function EvalBoxPlotter() {
       this.clear();
       numeric.plot = (function(_this) {
@@ -118,22 +124,29 @@
     }
 
     EvalBoxPlotter.prototype.clear = function() {
-      var ref, ref1, resource;
-      resource = $blab.evaluatingResource;
-      return resource != null ? (ref = resource.containers) != null ? (ref1 = ref.getEvalContainer()) != null ? ref1.find(".eval_flot").remove() : void 0 : void 0 : void 0;
+      return typeof $Ace !== "undefined" && $Ace !== null ? $Ace.evalRemove("." + figClass) : void 0;
     };
 
     EvalBoxPlotter.prototype.figure = function(params) {
-      var flotId, resource;
+      var container, figure, find, flotId, ref, resource;
       if (params == null) {
         params = {};
       }
-      resource = $blab.evaluatingResource;
-      if (!resource) {
+      ref = typeof $Ace !== "undefined" && $Ace !== null ? $Ace.evalContainer() : void 0, container = ref.container, resource = ref.resource, find = ref.find;
+      if (!container) {
         return;
       }
-      flotId = "eval_plot_" + resource.url + "_" + this.plotCount;
-      this.figures[flotId] = new Figure(resource, flotId, params);
+      flotId = "" + plotPrefix + resource.url + "_" + this.plotCount;
+      figure = new Figure({
+        container: container,
+        flotId: flotId,
+        containerLine: (function() {
+          return find(flotId);
+        }),
+        figClass: figClass,
+        params: params
+      });
+      this.figures[flotId] = figure;
       this.plotCount++;
       return flotId;
     };
@@ -183,7 +196,7 @@
       numLines = resultArray.length;
       for (idx = j = 0, len = resultArray.length; j < len; idx = ++j) {
         b = resultArray[idx];
-        if ((typeof b === "string") && b.indexOf("eval_plot") !== -1) {
+        if ((typeof b === "string") && b.indexOf(plotPrefix) !== -1) {
           n = idx;
         }
       }
@@ -204,24 +217,19 @@
   })();
 
   Figure = (function() {
-    function Figure(resource1, flotId1, params1) {
-      var ref, ref1, ref2, ref3;
-      this.resource = resource1;
-      this.flotId = flotId1;
-      this.params = params1;
-      this.container = (ref = this.resource.containers) != null ? ref.getEvalContainer() : void 0;
-      if (!((ref1 = this.container) != null ? ref1.length : void 0)) {
-        return;
-      }
+    function Figure(spec) {
+      var ref, ref1, ref2;
+      this.spec = spec;
+      ref = this.spec, this.container = ref.container, this.flotId = ref.flotId, this.containerLine = ref.containerLine, this.figClass = ref.figClass, this.params = ref.params;
       this.w = this.container[0].offsetWidth;
       this.flot = $("<div>", {
         id: this.flotId,
-        "class": "eval_flot",
+        "class": this.figClass,
         css: {
           position: "absolute",
           top: "0px",
-          width: ((ref2 = this.params.width) != null ? ref2 : this.w - 50) + "px",
-          height: ((ref3 = this.params.height) != null ? ref3 : 150) + "px",
+          width: ((ref1 = this.params.width) != null ? ref1 : this.w - 50) + "px",
+          height: ((ref2 = this.params.height) != null ? ref2 : 150) + "px",
           margin: "0px",
           marginLeft: "30px",
           marginTop: "20px",
@@ -240,7 +248,7 @@
 
     Figure.prototype.setPos = function() {
       var p, ref;
-      p = this.resource.compiler.findStr(this.flotId);
+      p = this.containerLine();
       if (!p) {
         return;
       }

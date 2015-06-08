@@ -2,9 +2,7 @@
 Attaches math methods to Number and Array. 
 ###
 
-
 # TODO:
-# *** isMain
 # tan, asin, acos, atan.
 # Make predefinedCoffee a function?  Extract contents?
 # Functional form for complex arg.
