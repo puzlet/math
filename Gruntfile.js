@@ -6,7 +6,8 @@ module.exports = function(grunt) {
     coffee: {
       compile: {
         files: {
-          'build/math.js': ['src/math.coffee']
+          'build/math.js': ['src/math.coffee'],
+          'build/plot.js': ['src/plot.coffee']
         }
       }
     },

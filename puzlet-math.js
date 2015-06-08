@@ -6537,12 +6537,12 @@ Attaches math methods to Number and Array.
  */
 
 (function() {
-  var ArrayMath, AxesLabels, BlabPlotter, BlabPrinter, ComplexMath, EvalBoxPlotter, Figure, MathCoffee, NumericFunctions, ScalarMath, TypeMath,
+  var ArrayMath, ComplexMath, MathCoffee, NumericFunctions, ScalarMath, TypeMath,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
 
   MathCoffee = (function() {
-    MathCoffee.prototype.predefinedCoffee = "nm = numeric\nsize = nm.size\nmax = nm.max\nabs = nm.abs\npow = nm.pow\nsqrt = nm.sqrt\nexp = nm.exp\nlog = nm.log\nsin = nm.sin\ncos = nm.cos\ntan = nm.tan\nasin = nm.asin\nacos = nm.acos\natan = nm.atan\natan2 = nm.atan2\nceil = nm.ceil\nfloor = nm.floor\nround = nm.round\nrand = nm.rand\ncomplex = nm.complex\nconj = nm.conj\nlinspace = nm.linspace\nprint = nm.print\nplot = nm.plot\nplotSeries = nm.plotSeries\neplot = nm.plot\nfigure = nm.figure\npi = Math.PI\nj = complex 0, 1\nprint.clear()\neplot.clear()";
+    MathCoffee.prototype.predefinedCoffee = "nm = numeric\nsize = nm.size\nmax = nm.max\nabs = nm.abs\npow = nm.pow\nsqrt = nm.sqrt\nexp = nm.exp\nlog = nm.log\nsin = nm.sin\ncos = nm.cos\ntan = nm.tan\nasin = nm.asin\nacos = nm.acos\natan = nm.atan\natan2 = nm.atan2\nceil = nm.ceil\nfloor = nm.floor\nround = nm.round\nrand = nm.rand\ncomplex = nm.complex\nconj = nm.conj\nlinspace = nm.linspace\npi = Math.PI\nj = complex 0, 1";
 
     MathCoffee.prototype.basicOps = [["add", "add"], ["sub", "subtract"], ["mul", "multiply"], ["div", "divide"]];
 
@@ -6558,6 +6558,10 @@ Attaches math methods to Number and Array.
       this.initializeMath();
     }
 
+    MathCoffee.prototype.addPredefinedCode = function(code) {
+      return this.predefinedCoffeeLines = this.predefinedCoffeeLines.concat(code.split("\n"));
+    };
+
     MathCoffee.prototype.initializeMath = function() {
       if (this.mathInitialized != null) {
         return;
@@ -6566,22 +6570,14 @@ Attaches math methods to Number and Array.
       new ArrayMath(this.ops, this.assignOps);
       new ComplexMath(this.basicOps);
       new NumericFunctions;
-      new BlabPrinter;
-      new BlabPlotter;
-      this.evalBoxPlotter = new EvalBoxPlotter;
-      this.extraLines = (function(_this) {
-        return function(resultArray) {
-          return _this.evalBoxPlotter.extraLines(resultArray);
-        };
-      })(this);
       return this.mathInitialized = true;
     };
 
-    MathCoffee.prototype.compile = function(code, bare) {
+    MathCoffee.prototype.compile = function(code, bare, isMain) {
       var js, vanilla;
       vanilla = this.isVanilla(code);
       if (!vanilla) {
-        code = this.preProcess(code);
+        code = this.preProcess(code, isMain);
       }
       js = $coffee.compile(code);
       if (!vanilla) {
@@ -6590,9 +6586,11 @@ Attaches math methods to Number and Array.
       return js;
     };
 
-    MathCoffee.prototype.evaluate = function(code, js) {
+    MathCoffee.prototype.evaluate = function(code, js, isMain) {
+      var bare;
+      bare = false;
       if (!js) {
-        js = this.compile(code);
+        js = this.compile(code, bare, isMain);
       }
       eval(js);
       return js;
@@ -6896,6 +6894,30 @@ Attaches math methods to Number and Array.
 
   })();
 
+  window.$mathCoffee = new MathCoffee;
+
+}).call(this);
+;(function() {
+  var AxesLabels, BlabPlotter, BlabPrinter, EvalBoxPlotter, Figure, MathPlotting;
+
+  MathPlotting = (function() {
+    MathPlotting.prototype.preDefinedCoffee = "print = nm.print\nplot = nm.plot\nplotSeries = nm.plotSeries\neplot = nm.plot\nfigure = nm.figure\nprint.clear()\neplot.clear()";
+
+    function MathPlotting() {
+      var evalBoxPlotter;
+      new BlabPrinter;
+      new BlabPlotter;
+      evalBoxPlotter = new EvalBoxPlotter;
+      $mathCoffee.extraLines = function(resultArray) {
+        return evalBoxPlotter.extraLines(resultArray);
+      };
+      $mathCoffee.addPredefinedCode(this.preDefinedCoffee);
+    }
+
+    return MathPlotting;
+
+  })();
+
   BlabPrinter = (function() {
     function BlabPrinter() {
       var id, nm;
@@ -7052,13 +7074,13 @@ Attaches math methods to Number and Array.
     };
 
     EvalBoxPlotter.prototype.extraLines = function(resultArray) {
-      var b, d, i, idx, k, l, len, lfs, n, numLines, o, ref;
+      var b, d, i, idx, j, k, l, len, lfs, n, numLines, ref;
       if (!resultArray) {
         return "";
       }
       n = null;
       numLines = resultArray.length;
-      for (idx = k = 0, len = resultArray.length; k < len; idx = ++k) {
+      for (idx = j = 0, len = resultArray.length; j < len; idx = ++j) {
         b = resultArray[idx];
         if ((typeof b === "string") && b.indexOf("eval_plot") !== -1) {
           n = idx;
@@ -7070,7 +7092,7 @@ Attaches math methods to Number and Array.
         return "";
       }
       lfs = "";
-      for (i = o = 1, ref = l; 1 <= ref ? o <= ref : o >= ref; i = 1 <= ref ? ++o : --o) {
+      for (i = k = 1, ref = l; 1 <= ref ? k <= ref : k >= ref; i = 1 <= ref ? ++k : --k) {
         lfs += "\n";
       }
       return lfs;
@@ -7132,15 +7154,15 @@ Attaches math methods to Number and Array.
     };
 
     Figure.prototype.plot = function(x, y) {
-      var d, k, len, line, nLines, v;
+      var d, j, len, line, nLines, v;
       if (this.flot == null) {
         return;
       }
       if ((y != null ? y.length : void 0) && (y[0].length != null)) {
         nLines = y.length;
         d = [];
-        for (k = 0, len = y.length; k < len; k++) {
-          line = y[k];
+        for (j = 0, len = y.length; j < len; j++) {
+          line = y[j];
           v = numeric.transpose([x, line]);
           d.push(v);
         }
@@ -7218,6 +7240,6 @@ Attaches math methods to Number and Array.
 
   })();
 
-  window.$mathCoffee = new MathCoffee;
+  new MathPlotting;
 
 }).call(this);
