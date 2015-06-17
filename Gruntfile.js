@@ -16,7 +16,7 @@ module.exports = function(grunt) {
         separator: ';'
       },
       dist: {
-        src: ['lib/**/*.js', 'src/**/*.js', 'build/**/*.js'],
+        src: ['lib/jquery.flot.min.js', 'lib/**/*.js', 'src/**/*.js', 'build/**/*.js'],
         dest: '<%= pkg.name %>.js'
       }
     },
