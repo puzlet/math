@@ -6804,7 +6804,8 @@ PaperScript = (function() {
 	// Binary Operator Handler
 	function _$_(left, operator, right) {
 		var handler = binaryOperators[operator];
-		if (left && left[handler]) {
+		if (left[handler]) {
+//  		if (left && left[handler]) {  // This is bug if left is 0.
 			var res = left[handler](right);
 			return operator === '!==' ? !res : res;
 		}
