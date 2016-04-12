@@ -235,6 +235,18 @@ class ComplexMath extends TypeMath
     # Size of complex array.
     @proto.size = -> [this.x.length, this.x[0].length]
     
+    # Multiplication/division bug fix
+    mul = @proto.mul
+    @proto.mul = ->
+      z = mul.apply(this, arguments)
+      z.y ?= 0  # Set imaginary to zero if undefined.
+      z
+    div = @proto.div
+    @proto.div = ->
+      z = div.apply(this, arguments)
+      z.y ?= 0  # Set imaginary to zero if undefined.
+      z
+    
     # Operators
     @defineOperators(op[0], op[1]) for op in @ops
   
