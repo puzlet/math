@@ -221,7 +221,7 @@ Attaches math methods to Number and Array.
     extend(ComplexMath, superClass);
 
     function ComplexMath(ops) {
-      var complex, div, j, j2, k, len, mul, negj, op, ref;
+      var add, complex, div, fix, j, j2, k, len, mul, name, negj, op, ref, ref1, ref2, sub;
       this.ops = ops;
       ComplexMath.__super__.constructor.call(this, numeric.T.prototype);
       numeric.complex = function(x, y) {
@@ -234,27 +234,32 @@ Attaches math methods to Number and Array.
       this.proto.size = function() {
         return [this.x.length, this.x[0].length];
       };
-      mul = this.proto.mul;
-      this.proto.mul = function() {
-        var z;
-        z = mul.apply(this, arguments);
-        if (z.y == null) {
-          z.y = 0;
-        }
-        return z;
+      fix = (function(_this) {
+        return function(name, op) {
+          return _this.proto[name] = function() {
+            var z;
+            z = op.apply(this, arguments);
+            if (z.y == null) {
+              z.y = 0;
+            }
+            return z;
+          };
+        };
+      })(this);
+      ref = this.proto, add = ref.add, sub = ref.sub, mul = ref.mul, div = ref.div;
+      ref1 = {
+        add: add,
+        sub: sub,
+        mul: mul,
+        div: div
       };
-      div = this.proto.div;
-      this.proto.div = function() {
-        var z;
-        z = div.apply(this, arguments);
-        if (z.y == null) {
-          z.y = 0;
-        }
-        return z;
-      };
-      ref = this.ops;
-      for (k = 0, len = ref.length; k < len; k++) {
-        op = ref[k];
+      for (name in ref1) {
+        op = ref1[name];
+        fix(name, op);
+      }
+      ref2 = this.ops;
+      for (k = 0, len = ref2.length; k < len; k++) {
+        op = ref2[k];
         this.defineOperators(op[0], op[1]);
       }
       this.proto.__negate = this.proto.neg;
