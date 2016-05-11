@@ -105,12 +105,14 @@ class MathCoffee
     firstLine is "#!vanilla"
   
   preProcess: (code, isMain) ->
-  
+    
     lf = "\n"
-  
+    
     isMainStr = if isMain then 'true' else 'false'
     preamble = ["__isMain__ = #{isMainStr}#{lf}"].concat @predefinedCoffeeLines
-  
+    
+    code = @preProcessor(code) if @preProcessor?
+    
     codeLines = code.split lf
     
     for l, i in codeLines

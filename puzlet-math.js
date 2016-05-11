@@ -7509,6 +7509,9 @@ Attaches math methods to Number and Array.
       lf = "\n";
       isMainStr = isMain ? 'true' : 'false';
       preamble = ["__isMain__ = " + isMainStr + lf].concat(this.predefinedCoffeeLines);
+      if (this.preProcessor != null) {
+        code = this.preProcessor(code);
+      }
       codeLines = code.split(lf);
       for (i = k = 0, len = codeLines.length; k < len; i = ++k) {
         l = codeLines[i];
