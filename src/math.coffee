@@ -273,6 +273,13 @@ class ComplexMath extends TypeMath
     # Square root
     @proto.sqrt = -> this.pow 0.5
     
+    # Exponential
+    @proto.exp = ->
+      x = this.x
+      y = this.y
+      e = Math.exp(x)
+      complex(e*Math.cos(y), e*Math.sin(y))
+      
     # Natural logarthim
     @proto.log = ->
       r = this.abs().x
@@ -329,6 +336,10 @@ class NumericFunctions
     # Power
     npow = nm.pow
     nm.pow = (x, p) -> if x.pow? then x.pow(p) else npow(x, p)
+    
+    # Exponential
+    exp = nm.exp
+    nm.exp = (x) -> if x.exp? and x instanceof nm.T then x.exp(x) else exp(x)
     
     # Absolute value
     nabs = nm.abs

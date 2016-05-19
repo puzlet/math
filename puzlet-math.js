@@ -7727,6 +7727,13 @@ Attaches math methods to Number and Array.
       this.proto.sqrt = function() {
         return this.pow(0.5);
       };
+      this.proto.exp = function() {
+        var e, x, y;
+        x = this.x;
+        y = this.y;
+        e = Math.exp(x);
+        return complex(e * Math.cos(y), e * Math.sin(y));
+      };
       this.proto.log = function() {
         var a, r;
         r = this.abs().x;
@@ -7772,7 +7779,7 @@ Attaches math methods to Number and Array.
     NumericFunctions.prototype.overrideFcns = ["sqrt", "sin", "cos", "exp", "log"];
 
     function NumericFunctions() {
-      var f, k, len, nabs, natan2, nm, npow, ref;
+      var exp, f, k, len, nabs, natan2, nm, npow, ref;
       ref = this.overrideFcns;
       for (k = 0, len = ref.length; k < len; k++) {
         f = ref[k];
@@ -7785,6 +7792,14 @@ Attaches math methods to Number and Array.
           return x.pow(p);
         } else {
           return npow(x, p);
+        }
+      };
+      exp = nm.exp;
+      nm.exp = function(x) {
+        if ((x.exp != null) && x instanceof nm.T) {
+          return x.exp(x);
+        } else {
+          return exp(x);
         }
       };
       nabs = nm.abs;
