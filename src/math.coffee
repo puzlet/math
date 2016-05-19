@@ -339,7 +339,18 @@ class NumericFunctions
     
     # Exponential
     exp = nm.exp
-    nm.exp = (x) -> if x.exp? and x instanceof nm.T then x.exp(x) else exp(x)
+    nm.exp = (x) ->
+      if x instanceof Array
+        if x[0].exp? and x[0] instanceof nm.T
+          y = (z.exp() for z in x)
+        else
+          y = exp(x)
+      else
+        if x.exp? and x instanceof nm.T
+          y = x.exp()
+        else
+          y = exp(x)
+      y
     
     # Absolute value
     nabs = nm.abs

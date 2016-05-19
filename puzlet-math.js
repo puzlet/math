@@ -7796,11 +7796,29 @@ Attaches math methods to Number and Array.
       };
       exp = nm.exp;
       nm.exp = function(x) {
-        if ((x.exp != null) && x instanceof nm.T) {
-          return x.exp(x);
+        var y, z;
+        if (x instanceof Array) {
+          if ((x[0].exp != null) && x[0] instanceof nm.T) {
+            y = (function() {
+              var len1, o, results;
+              results = [];
+              for (o = 0, len1 = x.length; o < len1; o++) {
+                z = x[o];
+                results.push(z.exp());
+              }
+              return results;
+            })();
+          } else {
+            y = exp(x);
+          }
         } else {
-          return exp(x);
+          if ((x.exp != null) && x instanceof nm.T) {
+            y = x.exp();
+          } else {
+            y = exp(x);
+          }
         }
+        return y;
       };
       nabs = nm.abs;
       nm.abs = function(x) {
