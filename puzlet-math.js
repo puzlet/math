@@ -7658,7 +7658,7 @@ Attaches math methods to Number and Array.
     extend(ComplexMath, superClass);
 
     function ComplexMath(ops) {
-      var add, complex, div, fix, j, j2, k, len, mul, name, negj, op, ref, ref1, ref2, sub;
+      var add, complex, div, fix, j, j2, k, len, mul, name, negj, op, ref, ref1, ref2, sub, zexp;
       this.ops = ops;
       ComplexMath.__super__.constructor.call(this, numeric.T.prototype);
       numeric.complex = function(x, y) {
@@ -7727,12 +7727,48 @@ Attaches math methods to Number and Array.
       this.proto.sqrt = function() {
         return this.pow(0.5);
       };
-      this.proto.exp = function() {
+      zexp = function(z) {
         var e, x, y;
-        x = this.x;
-        y = this.y;
+        x = z.x;
+        y = z.y;
         e = Math.exp(x);
         return complex(e * Math.cos(y), e * Math.sin(y));
+      };
+      this.proto.exp = function() {
+        var e, ei, ex, ey, idx, xi;
+        if (this.x instanceof Array) {
+          e = (function() {
+            var len1, o, ref3, results;
+            ref3 = this.x;
+            results = [];
+            for (idx = o = 0, len1 = ref3.length; o < len1; idx = ++o) {
+              xi = ref3[idx];
+              results.push(zexp(complex(xi, this.y[idx])));
+            }
+            return results;
+          }).call(this);
+          ex = (function() {
+            var len1, o, results;
+            results = [];
+            for (o = 0, len1 = e.length; o < len1; o++) {
+              ei = e[o];
+              results.push(ei.x);
+            }
+            return results;
+          })();
+          ey = (function() {
+            var len1, o, results;
+            results = [];
+            for (o = 0, len1 = e.length; o < len1; o++) {
+              ei = e[o];
+              results.push(ei.y);
+            }
+            return results;
+          })();
+          return complex(ex, ey);
+        } else {
+          return zexp(this);
+        }
       };
       this.proto.log = function() {
         var a, r;

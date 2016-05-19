@@ -274,11 +274,20 @@ class ComplexMath extends TypeMath
     @proto.sqrt = -> this.pow 0.5
     
     # Exponential
-    @proto.exp = ->
-      x = this.x
-      y = this.y
+    zexp = (z) ->
+      x = z.x
+      y = z.y
       e = Math.exp(x)
       complex(e*Math.cos(y), e*Math.sin(y))
+    @proto.exp = ->
+      if this.x instanceof Array
+        # Array of complex
+        e = (zexp(complex(xi, this.y[idx])) for xi, idx in this.x)
+        ex = (ei.x for ei in e)
+        ey = (ei.y for ei in e)
+        complex ex, ey
+      else
+        zexp(this)
       
     # Natural logarthim
     @proto.log = ->
@@ -342,11 +351,13 @@ class NumericFunctions
     nm.exp = (x) ->
       if x instanceof Array
         if x[0].exp? and x[0] instanceof nm.T
+          # Array of complex
           y = (z.exp() for z in x)
         else
           y = exp(x)
       else
         if x.exp? and x instanceof nm.T
+          # Complex or complex array
           y = x.exp()
         else
           y = exp(x)
